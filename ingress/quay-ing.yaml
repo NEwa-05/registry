@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: quaying
+  namespace: quay-enterprise
+  annotations:
+spec:
+  rules:
+  - host: quay.local
+    http:
+      paths:
+      - backend:
+          serviceName: quaysvc
+          servicePort: 39990
+      - backend:
+          serviceName: quaysvc
+          servicePort: 39991

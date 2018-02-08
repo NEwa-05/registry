@@ -1,0 +1,17 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: quaysvc
+  namespace: quay-enterprise
+spec:
+  selector:
+    app: quay
+  ports:
+  - protocol: TCP
+    port: 39990
+    targetPort: 80
+    name: webui
+  - protocol: TCP
+    port: 39991
+    targetPort: 443
+    name: webuis

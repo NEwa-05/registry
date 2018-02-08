@@ -1,0 +1,72 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: quay
+  namespace: quay-enterprise
+spec:
+  template:
+    metadata:
+      labels:
+        app: quay
+    spec:
+      containers:
+      - name: quay
+        image: newa/reg:v2.7.0
+        ports:
+        - containerPort: 443
+        - containerPort: 80
+        volumeMounts:
+        - name: quay-storage-persistent-storage
+          mountPath: /datastorage
+        - name: configvolume
+          readOnly: false
+          mountPath: /conf/stack
+      - name: mariadb
+        image: mariadb
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: MARIADB_ROOT_PASSWORD
+                name: mariadb
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: MARIADB_PASSWORD
+                name: mariadb
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                key: MARIADB_USER
+                name: mariadb
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                key: MARIADB_DATABASE
+                name: mariadb
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mariadb-persistent-storage
+          mountPath: /var/lib/mariadb
+      - name: redis
+        image: redis
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-persistent-storage
+          mountPath: /redis-master-data
+      volumes:
+        - name: redis-persistent-storage
+          persistentVolumeClaim:
+           claimName: redis-pv-claim
+        - name: quay-storage-persistent-storage
+          persistentVolumeClaim:
+            claimName: quay-storage-pv-claim
+        - name: mariadb-persistent-storage
+          persistentVolumeClaim:
+            claimName: mariadb-pv-claim
+        - name: configvolume
+          secret:
+            secretName: quay-enterprise-config-secret
